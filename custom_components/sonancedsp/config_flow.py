@@ -43,7 +43,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     }
 
 
-class ConfigFlow(ConfigFlow, domain=DOMAIN):
+class SonanceConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Sonance DSP."""
 
     VERSION = 1

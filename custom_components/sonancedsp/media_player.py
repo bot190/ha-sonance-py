@@ -5,6 +5,8 @@ from typing import Any
 from homeassistant.components.media_player import (
     MediaPlayerDeviceClass,
     MediaPlayerEntity,
+)
+from homeassistant.components.media_player.const import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
     MediaType,
@@ -15,6 +17,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from sonance_py import SonanceOutput, StereoMode
 
 from . import SonanceDSPConfigEntry
 from .const import DOMAIN, MIN_VOLUME_DB
@@ -88,7 +91,7 @@ class SonanceDSPMediaPlayer(
         return super().available and self._output is not None
 
     @property
-    def _output(self) -> object | None:
+    def _output(self) -> SonanceOutput | None:
         """Return the current live library output for this entity."""
         return self.coordinator.get_output(self._output_group)
 
@@ -99,10 +102,10 @@ class SonanceDSPMediaPlayer(
         super()._handle_coordinator_update()
 
     @property
-    def state(self) -> MediaPlayerState | None:
+    def state(self) -> MediaPlayerState:
         """Return the current entity state."""
         if not self.available:
-            return None
+            return MediaPlayerState.OFF
         return MediaPlayerState.IDLE
 
     @property
@@ -197,10 +200,10 @@ class SonanceDSPMediaPlayer(
         if len(output.channel_indexes) != 2 or str(output.stereo_mode) != "stereo":
             return
 
-        await output.set_stereo_mode("mono")
+        await output.set_stereo_mode(StereoMode.MONO)
         await self.coordinator.async_refresh_from_cache()
 
-    def _resolve_group_member(self, entity_id: str) -> object:
+    def _resolve_group_member(self, entity_id: str) -> SonanceOutput:
         """Resolve a Home Assistant entity ID to a live Sonance output."""
         entity_registry = er.async_get(self.hass)
         if not (entity_entry := entity_registry.async_get(entity_id)):
@@ -217,7 +220,7 @@ class SonanceDSPMediaPlayer(
             )
         return output
 
-    def _require_output(self) -> object:
+    def _require_output(self) -> SonanceOutput:
         """Return the current output or raise if it is unavailable."""
         if not (output := self._output):
             raise ServiceValidationError(
@@ -235,6 +238,6 @@ class SonanceDSPMediaPlayer(
             self._attr_name = f"Output {output.number}"
             return
 
-        channel = output.channels[0]
-        side = "Left" if channel.side == "left" else "Right"
-        self._attr_name = f"Output {channel.number} {side}"
+        channel = output.channel_indexes[0]
+        side = "Left" if channel % 2 == 0 else "Right"
+        self._attr_name = f"Output {output.number} {side}"

@@ -15,9 +15,7 @@ PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
 type SonanceDSPConfigEntry = ConfigEntry[SonanceDSPCoordinator]
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: SonanceDSPConfigEntry
-) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: SonanceDSPConfigEntry) -> bool:
     """Set up Sonance DSP from a config entry."""
     session = async_get_clientsession(hass)
     amplifier = create_sonance_dsp(
@@ -38,9 +36,7 @@ async def async_setup_entry(
     return True
 
 
-async def async_unload_entry(
-    hass: HomeAssistant, entry: SonanceDSPConfigEntry
-) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: SonanceDSPConfigEntry) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         await entry.runtime_data.async_close()
