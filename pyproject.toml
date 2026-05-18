@@ -52,6 +52,7 @@ select = [
 include = ["custom_components"]
 pythonVersion = "3.14"
 typeCheckingMode = "standard"
+reportIncompatibleVariableOverride = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

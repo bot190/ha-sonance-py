@@ -8,6 +8,7 @@ import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from sonance_py import SonanceDSP, SonanceOutput
 
 from .const import DEFAULT_SCAN_INTERVAL
 
@@ -33,7 +34,7 @@ class SonanceDSPCoordinator(DataUpdateCoordinator[SonanceDSPData]):
         self,
         hass: HomeAssistant,
         config_entry: SonanceDSPConfigEntry,
-        amplifier: object,
+        amplifier: SonanceDSP,
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
@@ -43,7 +44,7 @@ class SonanceDSPCoordinator(DataUpdateCoordinator[SonanceDSPData]):
             name=config_entry.title,
             update_interval=DEFAULT_SCAN_INTERVAL,
         )
-        self.amplifier = amplifier
+        self.amplifier: SonanceDSP = amplifier
 
     async def _async_update_data(self) -> SonanceDSPData:
         """Fetch fresh Sonance DSP state."""
@@ -65,7 +66,7 @@ class SonanceDSPCoordinator(DataUpdateCoordinator[SonanceDSPData]):
         """Push updated cached state to listeners after a successful write."""
         self.async_set_updated_data(self._snapshot())
 
-    def get_output(self, output_group: str) -> object | None:
+    def get_output(self, output_group: str) -> SonanceOutput | None:
         """Return the current output matching a group identifier."""
         for output in self.amplifier.outputs:
             if output_group_id(output) == output_group:
@@ -81,7 +82,7 @@ class SonanceDSPCoordinator(DataUpdateCoordinator[SonanceDSPData]):
         await self.amplifier.close()
 
 
-def output_group_id(output: object) -> str:
+def output_group_id(output: SonanceOutput) -> str:
     """Normalize an output's group identifier."""
     group = output.output_group
     return group.value if hasattr(group, "value") else str(group)

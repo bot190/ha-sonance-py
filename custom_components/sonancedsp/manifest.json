@@ -1,22 +1,21 @@
 {
-  "domain": "sonancedsp",
-  "name": "Sonance DSP",
-  "codeowners": [
-    "@bot190"
-  ],
-  "config_flow": true,
-  "dependencies": [],
-  "documentation": "https://www.home-assistant.io/integrations/sonancedsp",
-  "integration_type": "device",
-  "iot_class": "local_polling",
-  "loggers": [
-    "sonance"
-  ],
-  "quality_scale": "bronze",
-  "requirements": [
-    "sonance-py==0.1.0"
-  ],
-  "ssdp": [],
-  "version": "0.1.0",
-  "zeroconf": []
+    "domain": "sonancedsp",
+    "name": "Sonance DSP",
+    "codeowners": [
+        "@bot190"
+    ],
+    "config_flow": true,
+    "dependencies": [],
+    "documentation": "https://github.com/bot190/ha-sonance-py",
+    "integration_type": "device",
+    "iot_class": "local_polling",
+    "issue_tracker": "https://github.com/bot190/ha-sonance-py/issues",
+    "loggers": [
+        "sonance"
+    ],
+    "quality_scale": "bronze",
+    "requirements": [
+        "sonance-py==0.1.0"
+    ],
+    "version": "0.1.0"
 }
