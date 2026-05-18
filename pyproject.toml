@@ -1,0 +1,57 @@
+[project]
+name = "ha-sonance-py"
+version = "0.1.0"
+description = "Home Assistant custom component for the Sonance-Py library"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pytest-homeassistant-custom-component>=0.13.316",
+    "sonance-py>=0.1.0",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Topic :: Home Automation",
+]
+keywords = [
+  "custom component",
+  "custom integration",
+  "hacs",
+  "home-assistant",
+  "home-assistant-custom-component",
+  "homeassistant",
+  "integration",
+  "sonance",
+  "sonance-dsp"
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.400",
+    "ruff>=0.14.0",
+]
+
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+src = ["custom_components"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+]
+
+
+[tool.pyright]
+include = ["custom_components"]
+pythonVersion = "3.14"
+typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
