@@ -25,6 +25,7 @@ class FakeOutputGroup(StrEnum):
 
     A = "a"
     B = "b"
+    C = "c"
 
 
 class FakeStereoMode(StrEnum):
@@ -69,6 +70,7 @@ class FakeOutput:
             for idx, channel_index in enumerate(channel_indexes)
         )
         self.join_calls: list[list[FakeOutput]] = []
+        self.set_source_1_calls: list[int] = []
 
     def source_names(self) -> tuple[str, ...]:
         """Return available sources."""
@@ -77,11 +79,20 @@ class FakeOutput:
             "Input 1R",
             "Input 2L",
             "Input 2R",
+            "Input 3L",
+            "Input 3R",
+            "Input 4L",
+            "Input 4R",
         )
 
     async def set_source_by_name(self, name: str) -> None:
         """Set the source by name."""
         self.source_1 = self.source_names().index(name)
+
+    async def set_source_1(self, value: int) -> None:
+        """Set the primary source."""
+        self.set_source_1_calls.append(value)
+        self.source_1 = value
 
     async def set_volume(self, value: int) -> None:
         """Set the volume."""
@@ -94,10 +105,6 @@ class FakeOutput:
     async def join(self, members: list[FakeOutput]) -> None:
         """Record join calls."""
         self.join_calls.append(members)
-
-    async def set_stereo_mode(self, value: str) -> None:
-        """Set stereo mode."""
-        self.stereo_mode = FakeStereoMode(value)
 
 
 class FakeAmplifier:
@@ -118,6 +125,9 @@ class FakeAmplifier:
             ),
             FakeOutputGroup.B: FakeOutput(
                 self, FakeOutputGroup.B, 2, (2, 3), source_1=2
+            ),
+            FakeOutputGroup.C: FakeOutput(
+                self, FakeOutputGroup.C, 3, (4, 5), source_1=4
             ),
         }
 
