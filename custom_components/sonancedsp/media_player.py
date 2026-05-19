@@ -17,11 +17,11 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from sonance_py import SonanceOutput, StereoMode
+from sonance_py import SonanceOutput
 
 from . import SonanceDSPConfigEntry
 from .const import DOMAIN, MIN_VOLUME_DB
-from .coordinator import SonanceDSPCoordinator
+from .coordinator import SonanceDSPCoordinator, output_group_id
 
 SUPPORTED_FEATURES = (
     MediaPlayerEntityFeature.GROUPING
@@ -53,6 +53,8 @@ async def async_setup_entry(
         ]
         known_groups.update(new_groups)
         async_add_entities(entities)
+        for entity in entities:
+            entity.async_schedule_update_ha_state()
 
     async_add_missing_entities()
     entry.async_on_unload(coordinator.async_add_listener(async_add_missing_entities))
@@ -110,8 +112,16 @@ class SonanceDSPMediaPlayer(
 
     @property
     def group_members(self) -> list[str]:
-        """Return current group members."""
-        return [self.entity_id]
+        """Return outputs using the same primary source."""
+        if not (output := self._output):
+            return []
+
+        return [
+            entity_id
+            for member in self.coordinator.amplifier.outputs
+            if member.source_1 == output.source_1
+            if (entity_id := self._entity_id_for_output_group(output_group_id(member)))
+        ]
 
     @property
     def source_list(self) -> list[str] | None:
@@ -197,10 +207,8 @@ class SonanceDSPMediaPlayer(
     async def async_unjoin_player(self) -> None:
         """Split a stereo output back into mono outputs."""
         output = self._require_output()
-        if len(output.channel_indexes) != 2 or str(output.stereo_mode) != "stereo":
-            return
 
-        await output.set_stereo_mode(StereoMode.MONO)
+        await output.set_source_1((output.number - 1) * 2)
         await self.coordinator.async_refresh_from_cache()
 
     def _resolve_group_member(self, entity_id: str) -> SonanceOutput:
@@ -227,6 +235,14 @@ class SonanceDSPMediaPlayer(
                 f"Output group {self._output_group} is not currently active"
             )
         return output
+
+    def _entity_id_for_output_group(self, output_group: str) -> str | None:
+        """Resolve an output group to its media player entity ID."""
+        return er.async_get(self.hass).async_get_entity_id(
+            "media_player",
+            DOMAIN,
+            f"{self.coordinator.data.general_settings.serial_number}_{output_group}",
+        )
 
     def _update_name(self) -> None:
         """Update the entity name from the current output shape."""
